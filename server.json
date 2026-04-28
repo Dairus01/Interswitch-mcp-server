@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dairus01/interswitch-mcp-server",
-  "description": "MCP server for Interswitch APIs — accept payments, send money, manage Verve cards, recharge airtime, issue paycodes, and more across Africa",
+  "description": "MCP server for Interswitch APIs: payments, transfers, Verve cards, airtime, and paycodes.",
   "repository": {
     "url": "https://github.com/Dairus01/Interswitch-mcp-server",
     "source": "github"
