@@ -6,9 +6,7 @@
     "url": "https://github.com/Dairus01/Interswitch-mcp-server",
     "source": "github"
   },
-  "version_detail": {
-    "version": "0.1.2"
-  },
+  "version": "0.1.3",
   "packages": [
     {
       "registryType": "npm",
