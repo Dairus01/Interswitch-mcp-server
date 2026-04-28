@@ -85,3 +85,31 @@ export function getConfigSummary() {
     legacyAuthEnabled: config.legacyAuthEnabled,
   };
 }
+
+export function validateProductionConfig(): string[] {
+  if (config.env !== 'production') {
+    return [];
+  }
+
+  const warnings: string[] = [];
+  if (!config.core.clientId || !config.core.clientSecret) {
+    warnings.push('INTERSWITCH_ENV=production but core credentials are missing. Core API tools will fail until INTERSWITCH_CLIENT_ID and INTERSWITCH_CLIENT_SECRET are configured.');
+  }
+  if (!config.readOnly) {
+    warnings.push('INTERSWITCH_ENV=production and INTERSWITCH_READ_ONLY=false. Write tools can send live requests when confirm:true is supplied.');
+  }
+  if (config.debug) {
+    warnings.push('INTERSWITCH_ENV=production and DEBUG=true. Disable debug logging around live financial traffic.');
+  }
+  if (!config.card360.clientId || !config.card360.clientSecret) {
+    warnings.push('Card 360 production credentials are not configured. Card 360 tools will fail if used.');
+  }
+  if (!config.transactionSearch.clientId || !config.transactionSearch.clientSecret) {
+    warnings.push('Transaction Search production credentials are not configured. Transaction Search tools will fail if used.');
+  }
+  if (!config.agency.merchantId || !config.agency.terminalId) {
+    warnings.push('Agency Banking production credentials are not configured. Agency tools will fail if used.');
+  }
+
+  return warnings;
+}

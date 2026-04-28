@@ -9,17 +9,26 @@ interface AgencyTokenCache {
 
 export class AgencyTokenManager {
   private cache: AgencyTokenCache | null = null;
+  private pendingFetch: Promise<string> | null = null;
   private readonly http = axios.create({ timeout: 30_000 });
 
   async getToken(): Promise<string> {
     if (this.cache && Date.now() < this.cache.expiresAt - 60_000) {
       return this.cache.token;
     }
-    return this.fetchToken();
+
+    if (!this.pendingFetch) {
+      this.pendingFetch = this.fetchToken().finally(() => {
+        this.pendingFetch = null;
+      });
+    }
+
+    return this.pendingFetch;
   }
 
   invalidate(): void {
     this.cache = null;
+    this.pendingFetch = null;
   }
 
   private async fetchToken(): Promise<string> {

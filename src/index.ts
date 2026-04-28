@@ -5,10 +5,16 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { registeredTools, toolHandlers } from './tools/registry.js';
 import { readResource, resources } from './resources/registry.js';
+import { validateProductionConfig } from './config/config.js';
 import { jsonContent } from './utils/mcp.js';
 import { toInterswitchError } from './utils/errors.js';
+import { logWarn } from './utils/logger.js';
 
 async function main() {
+  for (const warning of validateProductionConfig()) {
+    logWarn(warning);
+  }
+
   const server = new Server(
     { name: 'interswitch-mcp-server', version: '0.1.0' },
     { capabilities: { tools: {}, resources: {} } },
