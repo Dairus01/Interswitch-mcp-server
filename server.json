@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.dairus01/interswitch-mcp-server",
+  "name": "io.github.Dairus01/interswitch-mcp-server",
   "description": "MCP server for Interswitch APIs: payments, transfers, Verve cards, airtime, and paycodes.",
   "repository": {
     "url": "https://github.com/Dairus01/Interswitch-mcp-server",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "interswitch-mcp-server",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "transport": {
         "type": "stdio"
       },

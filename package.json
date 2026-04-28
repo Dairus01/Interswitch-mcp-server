@@ -1,7 +1,7 @@
 {
   "name": "interswitch-mcp-server",
-  "version": "0.1.2",
-  "mcpName": "io.github.dairus01/interswitch-mcp-server",
+  "version": "0.1.3",
+  "mcpName": "io.github.Dairus01/interswitch-mcp-server",
   "description": "Model Context Protocol server for Interswitch APIs",
   "homepage": "https://github.com/Dairus01/Interswitch-mcp-server#readme",
   "repository": {
