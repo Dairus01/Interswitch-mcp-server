@@ -1,0 +1,30 @@
+/**
+ * Interswitch MCP tool group implemented from INTERSWITCH_MCP_SKILL.md.
+ * Sandbox behavior depends on configured Interswitch credentials and documented endpoint availability.
+ */
+import { z } from 'zod';
+import type { RegisteredTool } from '../types/tool.js';
+import { config, requireConfigValue } from '../config/config.js';
+import { vasClient } from '../clients/vas-client.js';
+import { resolveKoboAmount } from '../utils/amount.js';
+import { requireWriteConfirmation } from '../utils/confirmation.js';
+import { normalizeResponse } from '../utils/normalizer.js';
+import { jsonContent, normalizedContent } from '../utils/mcp.js';
+import { toInterswitchError } from '../utils/errors.js';
+import { amountProperties, confirmProperty } from './schemas.js';
+
+async function invoke<T>(fn: () => Promise<T>) { try { return normalizedContent(normalizeResponse(await fn())); } catch (error) { const e = toInterswitchError(error); return jsonContent({ success: false, responseCode: e.responseCode, message: e.responseDescription, data: null, raw: e.raw }, true); } }
+
+const OptionalCategorySchema = z.object({ categoryId: z.string().optional() });
+const BillerIdSchema = z.object({ billerId: z.string() });
+const CustomerValidationSchema = z.object({ billerId: z.string(), customerId: z.string(), extra: z.record(z.unknown()).optional() });
+const VasPurchaseSchema = z.object({ amountNaira: z.number().positive().optional(), amountKobo: z.number().int().positive().optional(), payableCode: z.string().optional(), customerId: z.string(), transactionRef: z.string(), confirm: z.boolean().optional(), extra: z.record(z.unknown()).optional() });
+
+export const tools: RegisteredTool[] = [
+  { definition: { name: 'isw_get_billers_by_category', description: 'List VAS billers by category.', inputSchema: { type: 'object', properties: { categoryId: { type: 'string' } } } }, mode: 'read', risk: 'low', handler: async (args) => { const p = OptionalCategorySchema.parse(args ?? {}); return invoke(() => vasClient.get('/api/v2/quickteller/categorys', { query: p.categoryId ? { categoryId: p.categoryId } : undefined })); } },
+  { definition: { name: 'isw_get_biller_details', description: 'Get VAS biller details by billerId.', inputSchema: { type: 'object', properties: { billerId: { type: 'string' } }, required: ['billerId'] } }, mode: 'read', risk: 'low', handler: async (args) => { const p = BillerIdSchema.parse(args); return invoke(() => vasClient.get(`/api/v2/quickteller/billers/${encodeURIComponent(p.billerId)}`)); } },
+  { definition: { name: 'isw_validate_customer', description: 'Validate a customer account, meter, or phone number for a biller.', inputSchema: { type: 'object', properties: { billerId: { type: 'string' }, customerId: { type: 'string' }, extra: { type: 'object' } }, required: ['billerId', 'customerId'] } }, mode: 'read', risk: 'low', handler: async (args) => { const p = CustomerValidationSchema.parse(args); return invoke(() => vasClient.post('/api/v2/quickteller/customers/validations', { billerId: p.billerId, customerId: p.customerId, ...p.extra })); } },
+  { definition: { name: 'isw_pay_vas_bill', description: 'Pay a VAS bill. Provide amountNaira or amountKobo explicitly. Requires confirm: true.', inputSchema: { type: 'object', properties: { ...amountProperties, payableCode: { type: 'string' }, customerId: { type: 'string' }, transactionRef: { type: 'string' }, confirm: confirmProperty, extra: { type: 'object' } }, required: ['customerId', 'transactionRef'] } }, mode: 'write', risk: 'medium', handler: async (args) => { const p = VasPurchaseSchema.parse(args); requireWriteConfirmation('isw_pay_vas_bill', p, 'write', 'medium'); return invoke(() => vasClient.post('/api/v2/purchases', { merchantCode: requireConfigValue(config.core.merchantCode, 'INTERSWITCH_MERCHANT_CODE'), payableCode: p.payableCode ?? requireConfigValue(config.core.payableCode, 'INTERSWITCH_PAYABLE_CODE'), amount: resolveKoboAmount(p), customerId: p.customerId, transactionRef: p.transactionRef, ...p.extra })); } },
+  { definition: { name: 'isw_airtime_recharge', description: 'Top up a phone number through VAS airtime. Requires confirm: true.', inputSchema: { type: 'object', properties: { ...amountProperties, payableCode: { type: 'string' }, phoneNumber: { type: 'string' }, transactionRef: { type: 'string' }, confirm: confirmProperty, extra: { type: 'object' } }, required: ['phoneNumber', 'transactionRef'] } }, mode: 'write', risk: 'medium', handler: async (args) => { const p = z.object({ amountNaira: z.number().positive().optional(), amountKobo: z.number().int().positive().optional(), payableCode: z.string().optional(), phoneNumber: z.string(), transactionRef: z.string(), confirm: z.boolean().optional(), extra: z.record(z.unknown()).optional() }).parse(args); requireWriteConfirmation('isw_airtime_recharge', p, 'write', 'medium'); return invoke(() => vasClient.post('/api/v2/purchases', { merchantCode: requireConfigValue(config.core.merchantCode, 'INTERSWITCH_MERCHANT_CODE'), payableCode: p.payableCode ?? requireConfigValue(config.core.payableCode, 'INTERSWITCH_PAYABLE_CODE'), amount: resolveKoboAmount(p), customerId: p.phoneNumber, transactionRef: p.transactionRef, ...p.extra })); } },
+  { definition: { name: 'isw_get_airtime_epins', description: 'Purchase airtime e-pins. Requires confirm: true.', inputSchema: { type: 'object', properties: { ...amountProperties, payableCode: { type: 'string' }, customerId: { type: 'string' }, transactionRef: { type: 'string' }, confirm: confirmProperty, extra: { type: 'object' } }, required: ['customerId', 'transactionRef'] } }, mode: 'write', risk: 'medium', handler: async (args) => { const p = VasPurchaseSchema.parse(args); requireWriteConfirmation('isw_get_airtime_epins', p, 'write', 'medium'); return invoke(() => vasClient.post('/api/v2/purchases', { merchantCode: requireConfigValue(config.core.merchantCode, 'INTERSWITCH_MERCHANT_CODE'), payableCode: p.payableCode ?? requireConfigValue(config.core.payableCode, 'INTERSWITCH_PAYABLE_CODE'), amount: resolveKoboAmount(p), customerId: p.customerId, transactionRef: p.transactionRef, ...p.extra })); } },
+];
