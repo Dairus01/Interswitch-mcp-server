@@ -2,10 +2,18 @@
   "name": "interswitch-mcp-server",
   "version": "0.1.0",
   "description": "Model Context Protocol server for Interswitch APIs",
+  "homepage": "https://github.com/Dairus01/Interswitch-mcp-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dairus01/Interswitch-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dairus01/Interswitch-mcp-server/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "interswitch-mcp-server": "./dist/index.js"
+    "interswitch-mcp-server": "dist/index.js"
   },
   "files": [
     "dist",
@@ -14,15 +22,15 @@
     ".env.example"
   ],
   "scripts": {
-    "build": "tsc && cp -r dist/src/* dist/",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "dev": "node --loader ts-node/esm src/index.ts",
     "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
-    "test": "mocha",
-    "test:unit": "npm run build && mocha",
+    "test": "tsc -p tsconfig.test.json && mocha \"dist-test/test/unit/**/*.test.js\"",
+    "test:unit": "npm test",
     "lint": "tsc --noEmit",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "clean": "rm -rf dist dist-test",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "mcp",
