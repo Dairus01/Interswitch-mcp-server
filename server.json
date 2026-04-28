@@ -1,18 +1,52 @@
 {
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dairus01/interswitch-mcp-server",
   "description": "MCP server for Interswitch APIs — accept payments, send money, manage Verve cards, recharge airtime, issue paycodes, and more across Africa",
-  "license": "MIT",
-  "homepage": "https://github.com/Dairus01/Interswitch-mcp-server",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/Dairus01/Interswitch-mcp-server.git"
+    "url": "https://github.com/Dairus01/Interswitch-mcp-server",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "0.1.2"
   },
   "packages": [
     {
-      "registry_type": "npm",
-      "name": "interswitch-mcp-server",
-      "version": "0.1.1",
-      "runtime_hint": "node"
+      "registryType": "npm",
+      "identifier": "interswitch-mcp-server",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "INTERSWITCH_CLIENT_ID",
+          "description": "Interswitch OAuth2 client ID (from Interswitch Developer Console)",
+          "isRequired": true,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "INTERSWITCH_CLIENT_SECRET",
+          "description": "Interswitch OAuth2 client secret",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "INTERSWITCH_ENV",
+          "description": "Target environment: sandbox (default) or production",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "INTERSWITCH_READ_ONLY",
+          "description": "Set to true to block all write/transfer operations",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
     }
   ]
 }
