@@ -1,6 +1,6 @@
 # Interswitch MCP Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that enables AI assistants to interact with Interswitch APIs for payments, transfers, VAS, cardless paycodes, Transaction Search, Card 360, lending, payouts, agency banking, and fintech card-processing utilities.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that enables AI assistants to interact with [Interswitch APIs](https://docs.interswitchgroup.com/docs/home) for payments, transfers, VAS, cardless paycodes, Transaction Search, Card 360, lending, payouts, agency banking, and fintech card-processing utilities.
 
 > [!WARNING]
 > **Public Preview:** This MCP server is currently in public preview. It supports both Interswitch sandbox and production environments, so use cautiously, start with read-only mode, and report any issues you encounter.
@@ -186,6 +186,86 @@ If you've cloned and built the server locally:
 ## How It Works
 
 The Interswitch MCP Server exposes Interswitch API domains to AI assistants through dedicated MCP tools. The server does not parse an OpenAPI file at runtime; instead, it provides curated, typed tools for the supported Interswitch domains.
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph MCP Server
+        A[Interswitch MCP Server]
+        B[Tool Registry]
+        C[Resource Registry]
+    end
+
+    subgraph Auth Layer
+        D[OAuth2 Passport Manager]
+        E[Card 360 Token Manager]
+        F[Transaction Search Manager]
+        G[Agency Banking Token Manager]
+        H[Legacy Auth Manager]
+    end
+
+    subgraph Core Services
+        I[Payments Service]
+        J[VAS Services]
+        K[Transfers Service]
+        L[Cardless Services]
+        M[Transaction Search Service]
+        N[Card 360 Service]
+        O[Lending Service]
+        P[Transfer Service]
+        Q[Payouts Service]
+        R[Agency Service]
+        S[Fintech Utilities]
+    end
+
+    subgraph Safety Layer
+        J1[Confirmation Gate]
+        J2[Read-Only Mode]
+        J3[Redaction System]
+        J4[Audit Logging]
+    end
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    A --> G
+    A --> H
+    B --> I
+    B --> J
+    B --> K
+    B --> L
+    B --> M
+    B --> N
+    B --> O
+    B --> P
+    B --> Q
+    B --> R
+    B --> S
+    I --> J1
+    J --> J1
+    K --> J1
+    L --> J1
+    M --> J1
+    N --> J1
+    O --> J1
+    P --> J1
+    Q --> J1
+    R --> J1
+    S --> J1
+    J1 --> J2
+    J2 --> J3
+    J3 --> J4
+    J4 --> Z[External APIs]
+    
+    style MCP Server fill:#f0f8ff,stroke:#333,stroke-width:2px
+    style Auth Layer fill:#e6f7e6,stroke:#333,stroke-width:1px
+    style Core Services fill:#f9f9f9,stroke:#666,stroke-width:1px
+    style Safety Layer fill:#fff0f0,stroke:#c33,stroke-width:1px
+    style Z fill:#d4d4d4,stroke:#999,stroke-dasharray: 5 5
+```
 
 Each tool:
 
